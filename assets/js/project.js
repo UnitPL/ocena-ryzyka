@@ -276,12 +276,12 @@
         if (!data.rows || data.rows.length === 0) {
             return;
         }
-        
+
         // Przywróć rowCounter
         if (data.rowCounter) {
             window.ocenaRyzykaRowCounter = data.rowCounter;
         }
-        
+
         // Dodaj wiersze (użyj funkcji z autosave)
         data.rows.forEach(function(rowData) {
             if (typeof window.ocenaRyzykaRestoreRow === 'function') {
@@ -292,7 +292,12 @@
                 restoreRowSimple(rowData);
             }
         });
-        
+
+        // Zastosuj grupowanie i scalanie komórek po przywróceniu wszystkich wierszy
+        if (typeof window.ocenaRyzykaApplyRowGrouping === 'function') {
+            window.ocenaRyzykaApplyRowGrouping();
+        }
+
         // Przewiń do lewej
         $('.ocena-ryzyka-table-wrapper').scrollLeft(0);
     }
@@ -399,12 +404,17 @@
                 np_po: $row.find('[data-field="np_po"]').val() || '',
                 hrn_po: $row.find('.calc-hrn-po').text() || '',
                 stopien_po: $row.find('.calc-stopien-po').text() || '',
-                redukcja: $row.find('.calc-redukcja').text() || ''
+                redukcja: $row.find('.calc-redukcja').text() || '',
+                // Dane o grupowaniu i scalonych komórkach
+                merge_data: {
+                    group_key: $row.attr('data-merge-group') || null,
+                    position: $row.attr('data-merge-position') || null
+                }
             };
-            
+
             rows.push(rowData);
         });
-        
+
         return {
             rows: rows,
             timestamp: new Date().toISOString(),

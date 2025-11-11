@@ -58,7 +58,7 @@
     // Zbieranie danych z tabeli
     function collectTableData() {
         const rows = [];
-        
+
         $('#table-body tr:not(.selection-row)').each(function() {
             const $row = $(this);
             const rowData = {
@@ -87,12 +87,17 @@
                 np_po: $row.find('[data-field="np_po"]').val() || '',
                 hrn_po: $row.find('.calc-hrn-po').text() || '',
                 stopien_po: $row.find('.calc-stopien-po').text() || '',
-                redukcja: $row.find('.calc-redukcja').text() || ''
+                redukcja: $row.find('.calc-redukcja').text() || '',
+                // Dane o grupowaniu i scalonych komórkach
+                merge_data: {
+                    group_key: $row.attr('data-merge-group') || null,
+                    position: $row.attr('data-merge-position') || null
+                }
             };
-            
+
             rows.push(rowData);
         });
-        
+
         return {
             rows: rows,
             timestamp: new Date().toISOString(),
@@ -124,16 +129,21 @@
             if (data.rowCounter) {
                 window.ocenaRyzykaRowCounter = data.rowCounter;
             }
-            
+
             // Dodaj wiersze z zapisanych danych
             data.rows.forEach(function(rowData) {
                 restoreRow(rowData);
             });
-            
+
+            // Zastosuj grupowanie i scalanie komórek po przywróceniu wszystkich wierszy
+            if (typeof window.ocenaRyzykaApplyRowGrouping === 'function') {
+                window.ocenaRyzykaApplyRowGrouping();
+            }
+
             // Zaktualizuj status
             const savedTime = new Date(data.timestamp);
             updateSaveStatus('loaded', savedTime);
-            
+
             console.log('Auto-save: Dane wczytane', data);
         } catch (error) {
             console.error('Auto-save: Błąd wczytywania', error);

@@ -220,13 +220,17 @@ function ocena_ryzyka_generate_pdf_html($projekt, $data, $format) {
     $html .= '<table>';
     $html .= ocena_ryzyka_generate_table_headers();
     $html .= '<tbody>';
-    
+
     if (isset($data['rows']) && !empty($data['rows'])) {
-        foreach ($data['rows'] as $row) {
-            $html .= ocena_ryzyka_generate_table_row($row);
+        // Oblicz rowspan dla scalonych komórek
+        $rowspan_infos = ocena_ryzyka_calculate_rowspans($data['rows']);
+
+        foreach ($data['rows'] as $index => $row) {
+            $rowspan_info = isset($rowspan_infos[$index]) ? $rowspan_infos[$index] : array();
+            $html .= ocena_ryzyka_generate_table_row($row, $rowspan_info);
         }
     }
-    
+
     $html .= '</tbody>';
     $html .= '</table>';
     $html .= ocena_ryzyka_generate_pdf_footer($projekt);
@@ -323,22 +327,99 @@ function ocena_ryzyka_generate_table_headers() {
     return $html;
 }
 
-function ocena_ryzyka_generate_table_row($row) {
+// Oblicz rowspan dla scalonych komórek (część systemu i obraz)
+function ocena_ryzyka_calculate_rowspans($rows) {
+    $grouped = array();
+    $rowspan_info = array();
+
+    // Grupuj wiersze według rodzaj + część systemu
+    foreach ($rows as $index => $row) {
+        $rodzaj = isset($row['rodzaj_zagrozenia']) ? $row['rodzaj_zagrozenia'] : '';
+        $czesc = isset($row['czesc_systemu']) ? $row['czesc_systemu'] : '';
+
+        // Pomiń wiersze bez części systemu
+        if (empty($czesc)) {
+            $rowspan_info[$index] = array(
+                'czesc_rowspan' => 0,
+                'obraz_rowspan' => 0,
+                'is_first' => false,
+                'skip_czesc' => false,
+                'skip_obraz' => false
+            );
+            continue;
+        }
+
+        $group_key = $rodzaj . '___' . $czesc;
+
+        if (!isset($grouped[$group_key])) {
+            $grouped[$group_key] = array();
+        }
+
+        $grouped[$group_key][] = $index;
+    }
+
+    // Dla każdej grupy ustaw rowspan
+    foreach ($grouped as $group_key => $indices) {
+        $rowspan = count($indices);
+
+        foreach ($indices as $position => $index) {
+            if ($position === 0) {
+                // Pierwszy wiersz w grupie - ma rowspan
+                $rowspan_info[$index] = array(
+                    'czesc_rowspan' => $rowspan,
+                    'obraz_rowspan' => $rowspan,
+                    'is_first' => true,
+                    'skip_czesc' => false,
+                    'skip_obraz' => false
+                );
+            } else {
+                // Pozostałe wiersze - pomijają komórki
+                $rowspan_info[$index] = array(
+                    'czesc_rowspan' => 0,
+                    'obraz_rowspan' => 0,
+                    'is_first' => false,
+                    'skip_czesc' => true,
+                    'skip_obraz' => true
+                );
+            }
+        }
+    }
+
+    return $rowspan_info;
+}
+
+function ocena_ryzyka_generate_table_row($row, $rowspan_info = array()) {
     $rodzaj_class = '';
     if (!empty($row['rodzaj_zagrozenia'])) {
         $rodzaj_class = ocena_ryzyka_get_rodzaj_css_class($row['rodzaj_zagrozenia']);
     }
     
     $html = '<tr class="' . $rodzaj_class . '">';
-    
+
     // 1. Lp z ikonką
     $html .= '<td class="cell-lp"><span class="lp-number">' . ocena_ryzyka_format_cell_value($row['lp']) . '</span></td>';
-    
-    // 2. Część systemu (BYŁO POMINIĘTE!)
-    $html .= '<td class="text-small">' . ocena_ryzyka_format_cell_value($row['czesc_systemu']) . '</td>';
-    
-    // 3. Obraz
-    $html .= '<td class="cell-image">' . ocena_ryzyka_generate_image_html($row['obraz']) . '</td>';
+
+    // 2. Część systemu - z rowspan jeśli jest w grupie
+    if (!empty($rowspan_info) && isset($rowspan_info['skip_czesc']) && $rowspan_info['skip_czesc']) {
+        // Pomiń komórkę (jest scalona z poprzednią)
+    } else {
+        $rowspan_attr = '';
+        if (!empty($rowspan_info) && isset($rowspan_info['czesc_rowspan']) && $rowspan_info['czesc_rowspan'] > 1) {
+            $rowspan_attr = ' rowspan="' . $rowspan_info['czesc_rowspan'] . '"';
+        }
+        $html .= '<td class="text-small"' . $rowspan_attr . '>' . ocena_ryzyka_format_cell_value($row['czesc_systemu']) . '</td>';
+    }
+
+    // 3. Obraz - z rowspan jeśli jest w grupie
+    if (!empty($rowspan_info) && isset($rowspan_info['skip_obraz']) && $rowspan_info['skip_obraz']) {
+        // Pomiń komórkę (jest scalona z poprzednią)
+    } else {
+        $rowspan_attr = '';
+        if (!empty($rowspan_info) && isset($rowspan_info['obraz_rowspan']) && $rowspan_info['obraz_rowspan'] > 1) {
+            $rowspan_attr = ' rowspan="' . $rowspan_info['obraz_rowspan'] . '"';
+        }
+        $html .= '<td class="cell-image"' . $rowspan_attr . '>' . ocena_ryzyka_generate_image_html($row['obraz']) . '</td>';
+    }
     
     // 4. Źródło zagrożenia z listy
     // Jeśli wybrano "Inne źródło" i jest wartość custom, użyj jej

@@ -169,20 +169,20 @@
     function replaceWithDataRow($selectionRow, rodzajZagrozenia) {
         const selectionId = $selectionRow.attr('data-selection-id');
         const dataRow = generateDataRow(selectionId, rodzajZagrozenia);
-        
+
         // Zamień wiersz
         $selectionRow.replaceWith(dataRow);
-        
+
         // Dodaj obsługę zdarzeń
         const $newRow = $('#row-' + selectionId);
         attachRowEvents($newRow);
-        
+
         // Zwiększ licznik dla następnego wiersza
         rowCounter++;
         window.ocenaRyzykaRowCounter = rowCounter;  // <-- DODAJ TĘ LINIĘ
-        
-        // Posortuj wiersze według rodzaju
-        sortRowsByRodzaj();
+
+        // Posortuj wiersze z animacją
+        animateRowToPosition($newRow);
     }
 
     // Funkcja zwracająca ikonę SVG dla rodzaju zagrożenia
@@ -239,7 +239,7 @@
                 </td>
                 
                 <!-- 3. Obraz -->
-                <td class="cell-image">
+                <td class="cell-image cell-obraz-czesci">
                     <button type="button" class="btn-upload" data-field="obraz">📷</button>
                     <input type="file" class="file-input" accept="image/*" style="display:none;" />
                     <img class="preview-image" src="" style="display:none; max-width:50px; max-height:50px;" />
@@ -549,8 +549,12 @@
         // Obsługa wyboru części systemu z listy
         $row.find('[data-field="czesc_systemu_select"]').on('change', function() {
             const selectedValue = $(this).val();
-            $row.find('[data-field="czesc_systemu"]').val(selectedValue);
-            $row.find('[data-field="czesc_systemu_input"]').val('');
+            if (selectedValue) {
+                $row.find('[data-field="czesc_systemu"]').val(selectedValue);
+                $row.find('[data-field="czesc_systemu_input"]').val('');
+                // Animuj przesunięcie wiersza do właściwej grupy
+                animateRowToPosition($row);
+            }
         });
 
         // Obsługa wpisywania nowej części systemu
@@ -564,6 +568,8 @@
                 $row.find('[data-field="czesc_systemu_select"]').val(inputValue);
                 // Wyczyść pole input
                 $(this).val('');
+                // Animuj przesunięcie wiersza do właściwej grupy
+                animateRowToPosition($row);
             }
         });
 
@@ -580,6 +586,8 @@
                     $row.find('[data-field="czesc_systemu_select"]').val(inputValue);
                     // Wyczyść pole input
                     $(this).val('');
+                    // Animuj przesunięcie wiersza do właściwej grupy
+                    animateRowToPosition($row);
                 }
             }
         });
@@ -670,32 +678,203 @@
         return index !== -1 ? index : 999;
     }
     
-    // Sortowanie wierszy według rodzaju zagrożenia
-    function sortRowsByRodzaj() {
+    // Sortowanie wierszy według rodzaju zagrożenia i części systemu
+    function sortRowsByRodzajAndCzesc() {
         const $tbody = $('#table-body');
         const $rows = $tbody.find('tr:not(.selection-row)').get();
-        
+
         $rows.sort(function(a, b) {
-            const rodzajA = $(a).attr('data-rodzaj') || '';
-            const rodzajB = $(b).attr('data-rodzaj') || '';
-            
+            const $a = $(a);
+            const $b = $(b);
+
+            // 1. Sortuj według rodzaju zagrożenia
+            const rodzajA = $a.attr('data-rodzaj') || '';
+            const rodzajB = $b.attr('data-rodzaj') || '';
+
             const indexA = rodzajOrder.indexOf(rodzajA);
             const indexB = rodzajOrder.indexOf(rodzajB);
-            
+
             const orderA = indexA !== -1 ? indexA : 999;
             const orderB = indexB !== -1 ? indexB : 999;
-            
-            return orderA - orderB;
+
+            if (orderA !== orderB) {
+                return orderA - orderB;
+            }
+
+            // 2. Sortuj według części systemu (alfabetycznie, puste na końcu)
+            const czescA = ($a.find('[data-field="czesc_systemu"]').val() || '').toLowerCase();
+            const czescB = ($b.find('[data-field="czesc_systemu"]').val() || '').toLowerCase();
+
+            // Puste części systemu na końcu grupy rodzaju
+            if (czescA === '' && czescB !== '') {
+                return 1; // A na końcu
+            }
+            if (czescA !== '' && czescB === '') {
+                return -1; // B na końcu
+            }
+
+            if (czescA !== czescB) {
+                return czescA.localeCompare(czescB);
+            }
+
+            // 3. Sortuj według Lp (jako fallback)
+            const lpA = parseInt($a.find('.cell-lp .lp-number').text()) || 0;
+            const lpB = parseInt($b.find('.cell-lp .lp-number').text()) || 0;
+
+            return lpA - lpB;
         });
-        
+
+        // Przepisz wiersze w nowej kolejności
         $.each($rows, function(index, row) {
             $tbody.append(row);
         });
-        
+
         // Przenumeruj wiersze po sortowaniu
         renumberRows();
+
+        // Zastosuj grupowanie i scalanie komórek
+        applyRowGrouping();
     }
-    
+
+    // Kompatybilność wsteczna - alias dla starej funkcji
+    function sortRowsByRodzaj() {
+        sortRowsByRodzajAndCzesc();
+    }
+
+    // Zastosuj grupowanie i scalanie komórek dla części systemu i obrazu
+    function applyRowGrouping() {
+        const $tbody = $('#table-body');
+        const $rows = $tbody.find('tr:not(.selection-row)');
+
+        // Najpierw wyczyść wszystkie atrybuty merge i rowspan
+        $rows.each(function() {
+            const $row = $(this);
+            $row.removeAttr('data-merge-group data-merge-position');
+            $row.find('.cell-czesc-systemu')
+                .removeClass('merged-hidden')
+                .removeAttr('rowspan');
+            $row.find('.cell-obraz-czesci')
+                .removeClass('merged-hidden')
+                .removeAttr('rowspan');
+        });
+
+        // Grupuj wiersze według rodzaj + część systemu
+        const groups = {};
+
+        $rows.each(function() {
+            const $row = $(this);
+            const rodzaj = $row.attr('data-rodzaj') || '';
+            const czesc = $row.find('[data-field="czesc_systemu"]').val() || '';
+
+            // Pomijaj wiersze bez części systemu
+            if (!czesc || czesc.trim() === '') {
+                return;
+            }
+
+            const groupKey = rodzaj + '___' + czesc;
+
+            if (!groups[groupKey]) {
+                groups[groupKey] = [];
+            }
+
+            groups[groupKey].push($row);
+        });
+
+        // Dla każdej grupy zastosuj rowspan
+        Object.keys(groups).forEach(function(groupKey) {
+            const groupRows = groups[groupKey];
+
+            if (groupRows.length > 1) {
+                // Pierwsz wiersz w grupie
+                const $firstRow = groupRows[0];
+                const rowspan = groupRows.length;
+
+                $firstRow.attr('data-merge-group', groupKey);
+                $firstRow.attr('data-merge-position', 'first');
+                $firstRow.find('.cell-czesc-systemu').attr('rowspan', rowspan);
+                $firstRow.find('.cell-obraz-czesci').attr('rowspan', rowspan);
+
+                // Pozostałe wiersze w grupie - ukryj komórki
+                for (let i = 1; i < groupRows.length; i++) {
+                    const $row = groupRows[i];
+                    $row.attr('data-merge-group', groupKey);
+                    $row.attr('data-merge-position', i === groupRows.length - 1 ? 'last' : 'middle');
+                    $row.find('.cell-czesc-systemu').addClass('merged-hidden');
+                    $row.find('.cell-obraz-czesci').addClass('merged-hidden');
+                }
+            } else {
+                // Pojedynczy wiersz - usuń atrybuty merge
+                groupRows[0].removeAttr('data-merge-group data-merge-position');
+            }
+        });
+    }
+
+    // Animowane przesunięcie wiersza do właściwej pozycji
+    function animateRowToPosition($row) {
+        // Zapisz obecną pozycję wiersza
+        const startOffset = $row.offset().top;
+        const startPosition = $row.index();
+
+        // Wykonaj sortowanie (bez animacji)
+        sortRowsByRodzajAndCzesc();
+
+        // Pobierz nową pozycję
+        const endOffset = $row.offset().top;
+        const endPosition = $row.index();
+
+        // Jeśli wiersz się nie przesunął, tylko highlight i scroll
+        if (startPosition === endPosition) {
+            $row.addClass('row-just-moved');
+            $row[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            setTimeout(function() {
+                $row.removeClass('row-just-moved');
+            }, 2000);
+            return;
+        }
+
+        // Oblicz różnicę
+        const delta = startOffset - endOffset;
+
+        // Zastosuj transform aby wrócić do początkowej pozycji wizualnej
+        $row.css({
+            transform: `translateY(${delta}px)`,
+            transition: 'none'
+        });
+
+        // Dodaj klasę animacji
+        $row.addClass('row-animating');
+
+        // Wymuszenie reflow
+        $row[0].offsetHeight;
+
+        // Animuj do pozycji docelowej
+        $row.css({
+            transform: 'translateY(0)',
+            transition: 'transform 800ms cubic-bezier(0.4, 0, 0.2, 1)'
+        });
+
+        // Po animacji - wyczyść style i dodaj highlight
+        setTimeout(function() {
+            $row.removeClass('row-animating');
+            $row.css({
+                transform: '',
+                transition: ''
+            });
+
+            // Dodaj highlight
+            $row.addClass('row-just-moved');
+
+            // Scroll do wiersza
+            $row[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Usuń highlight po 2 sekundach
+            setTimeout(function() {
+                $row.removeClass('row-just-moved');
+            }, 2000);
+        }, 800);
+    }
+
     // Obliczanie ryzyka dla wiersza
     function calculateRisk($row) {
         // Pobierz wartości przed korektą
@@ -857,15 +1036,55 @@
     function handleImageUpload(input) {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
-            
+
             reader.onload = function(e) {
                 const $preview = $(input).siblings('.preview-image');
                 $preview.attr('src', e.target.result).show();
                 $(input).siblings('.btn-upload').text('✓');
+
+                // Synchronizuj obraz w grupie
+                const $row = $(input).closest('tr');
+                const field = $(input).siblings('.btn-upload').attr('data-field');
+
+                if (field === 'obraz') {
+                    syncImageInGroup($row, e.target.result);
+                }
             };
-            
+
             reader.readAsDataURL(input.files[0]);
         }
+    }
+
+    // Synchronizuj obraz części systemu w całej grupie
+    function syncImageInGroup($row, imageData) {
+        const rodzaj = $row.attr('data-rodzaj') || '';
+        const czesc = $row.find('[data-field="czesc_systemu"]').val() || '';
+
+        if (!czesc || czesc.trim() === '') {
+            return;
+        }
+
+        const groupKey = rodzaj + '___' + czesc;
+
+        // Znajdź wszystkie wiersze w tej samej grupie
+        $('#table-body tr:not(.selection-row)').each(function() {
+            const $otherRow = $(this);
+            const otherRodzaj = $otherRow.attr('data-rodzaj') || '';
+            const otherCzesc = $otherRow.find('[data-field="czesc_systemu"]').val() || '';
+            const otherGroupKey = otherRodzaj + '___' + otherCzesc;
+
+            if (groupKey === otherGroupKey) {
+                // Aktualizuj obraz we wszystkich wierszach grupy
+                // (ale będzie widoczny tylko w pierwszym dzięki rowspan)
+                $otherRow.find('[data-field="obraz"]')
+                    .siblings('.preview-image')
+                    .attr('src', imageData)
+                    .show();
+                $otherRow.find('[data-field="obraz"]')
+                    .siblings('.btn-upload')
+                    .text('✓');
+            }
+        });
     }
     
     // Usuwanie wiersza
@@ -955,5 +1174,6 @@
     window.ocenaRyzykaCalculateRisk = calculateRisk;
     window.ocenaRyzykaAddSelectionRow = addSelectionRow;
     window.addCzescSystemuToList = addCzescSystemu;
+    window.ocenaRyzykaApplyRowGrouping = applyRowGrouping;
 
 })(jQuery);

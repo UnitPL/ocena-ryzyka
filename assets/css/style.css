@@ -1007,3 +1007,44 @@ tr[data-rodzaj] {
 .btn-remove-czesc:hover {
     background: #c82333;
 }
+
+/* ========================================
+   GRUPOWANIE WIERSZY I SCALANIE KOMÓREK
+   ======================================== */
+
+/* Ukryte komórki w scalonych grupach */
+.cell-czesc-systemu.merged-hidden,
+.cell-obraz-czesci.merged-hidden {
+    display: none !important;
+}
+
+/* Animacja przesuwania wiersza */
+.row-animating {
+    transition: transform 800ms cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 100;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Highlight po przesunięciu wiersza */
+.row-just-moved {
+    background: #fff3cd !important;
+    transition: background 2s ease-out;
+}
+
+.row-just-moved td {
+    background: #fff3cd !important;
+}
+
+/* Scalona komórka - vertical align i border */
+.cell-czesc-systemu[rowspan],
+.cell-obraz-czesci[rowspan] {
+    vertical-align: top;
+    border-bottom: 2px solid #dee2e6;
+}
+
+/* Pierwsza komórka w grupie - wyraźniejszy border top */
+tr[data-merge-position="first"] .cell-czesc-systemu,
+tr[data-merge-position="first"] .cell-obraz-czesci {
+    border-top: 2px solid #495057;
+}
