@@ -880,3 +880,130 @@ tr[data-rodzaj] {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 50%;
 }
+
+/* ========================================
+   CZĘŚĆ SYSTEMU - ZARZĄDZANIE LISTĄ
+   ======================================== */
+
+/* Przycisk zarządzania listą części */
+.btn-manage-czesci {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 0;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.2s;
+}
+
+.btn-manage-czesci:hover {
+    background: #5a6268;
+}
+
+/* Modal overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+/* Modal content */
+.modal-content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+/* Modal header */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #999;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+}
+
+.modal-close:hover {
+    color: #333;
+}
+
+/* Modal body */
+.modal-body {
+    padding: 20px;
+}
+
+/* Lista części */
+.czesci-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.czesc-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.czesc-item:hover {
+    background: #e9ecef;
+}
+
+.czesc-name {
+    flex: 1;
+    color: #333;
+    font-size: 14px;
+}
+
+.btn-remove-czesc {
+    background: #dc3545;
+    color: white;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-remove-czesc:hover {
+    background: #c82333;
+}

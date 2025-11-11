@@ -1,8 +1,8 @@
 (function($) {
     'use strict';
-    
+
     let rowCounter = 1;
-    
+
     // Kolejność sortowania rodzajów zagrożeń
     const rodzajOrder = [
         'Zagrożenia mechaniczne',
@@ -16,10 +16,73 @@
         'Zagrożenia wynikające ze środowiska, w którym maszyna jest użytkowana',
         'Kombinacja zagrożeń'
     ];
+
+    // Lista części systemu (przechowywana w localStorage)
+    let czesciSystemuList = [];
+
+    // Inicjalizacja listy części systemu
+    function initCzesciSystemuList() {
+        const saved = localStorage.getItem('ocena_ryzyka_czesci_systemu');
+        if (saved) {
+            try {
+                czesciSystemuList = JSON.parse(saved);
+            } catch (e) {
+                czesciSystemuList = [];
+            }
+        }
+    }
+
+    // Zapisz listę części systemu do localStorage
+    function saveCzesciSystemuList() {
+        localStorage.setItem('ocena_ryzyka_czesci_systemu', JSON.stringify(czesciSystemuList));
+    }
+
+    // Dodaj część systemu do listy
+    function addCzescSystemu(czesc) {
+        if (czesc && czesc.trim() !== '' && !czesciSystemuList.includes(czesc.trim())) {
+            czesciSystemuList.push(czesc.trim());
+            saveCzesciSystemuList();
+            updateAllCzesciSystemuSelects();
+        }
+    }
+
+    // Usuń część systemu z listy
+    function removeCzescSystemu(czesc) {
+        const index = czesciSystemuList.indexOf(czesc);
+        if (index > -1) {
+            czesciSystemuList.splice(index, 1);
+            saveCzesciSystemuList();
+            updateAllCzesciSystemuSelects();
+        }
+    }
+
+    // Generuj opcje dla selecta części systemu
+    function generateCzesciSystemuOptions() {
+        let options = '<option value="">-- Wybierz z listy --</option>';
+        czesciSystemuList.forEach(function(czesc) {
+            options += `<option value="${czesc}">${czesc}</option>`;
+        });
+        return options;
+    }
+
+    // Aktualizuj wszystkie selecty części systemu
+    function updateAllCzesciSystemuSelects() {
+        const options = generateCzesciSystemuOptions();
+        $('[data-field="czesc_systemu_select"]').each(function() {
+            const currentValue = $(this).val();
+            $(this).html(options);
+            if (currentValue && czesciSystemuList.includes(currentValue)) {
+                $(this).val(currentValue);
+            }
+        });
+    }
     
     $(document).ready(function() {
         console.log('Ocena Ryzyka - inicjalizacja');
-        
+
+        // Inicjalizacja listy części systemu
+        initCzesciSystemuList();
+
         // Inicjalizacja tabeli - dodaj pierwszy wiersz wyboru
         initTable();
         
@@ -164,8 +227,15 @@
                 </td>
                 
                 <!-- 2. Część systemu -->
-                <td class="cell-editable">
-                    <input type="text" class="cell-input" data-field="czesc_systemu" placeholder="Część systemu" />
+                <td class="cell-editable cell-czesc-systemu">
+                    <div style="display: flex; gap: 5px; align-items: center; margin-bottom: 5px;">
+                        <select class="cell-input czesc-systemu-select" data-field="czesc_systemu_select" style="flex: 1;">
+                            ${generateCzesciSystemuOptions()}
+                        </select>
+                        <button type="button" class="btn-manage-czesci" title="Zarządzaj listą części">⚙️</button>
+                    </div>
+                    <input type="text" class="cell-input czesc-systemu-input" data-field="czesc_systemu_input" placeholder="Lub wpisz nową część systemu" />
+                    <input type="hidden" data-field="czesc_systemu" />
                 </td>
                 
                 <!-- 3. Obraz -->
@@ -475,7 +545,50 @@
         $row.find('.file-input').on('change', function() {
             handleImageUpload(this);
         });
-        
+
+        // Obsługa wyboru części systemu z listy
+        $row.find('[data-field="czesc_systemu_select"]').on('change', function() {
+            const selectedValue = $(this).val();
+            $row.find('[data-field="czesc_systemu"]').val(selectedValue);
+            $row.find('[data-field="czesc_systemu_input"]').val('');
+        });
+
+        // Obsługa wpisywania nowej części systemu
+        $row.find('[data-field="czesc_systemu_input"]').on('blur', function() {
+            const inputValue = $(this).val().trim();
+            if (inputValue) {
+                // Dodaj do listy
+                addCzescSystemu(inputValue);
+                // Ustaw jako aktualną wartość
+                $row.find('[data-field="czesc_systemu"]').val(inputValue);
+                $row.find('[data-field="czesc_systemu_select"]').val(inputValue);
+                // Wyczyść pole input
+                $(this).val('');
+            }
+        });
+
+        // Obsługa klawisza Enter dla nowej części systemu
+        $row.find('[data-field="czesc_systemu_input"]').on('keypress', function(e) {
+            if (e.which === 13 || e.keyCode === 13) {
+                e.preventDefault();
+                const inputValue = $(this).val().trim();
+                if (inputValue) {
+                    // Dodaj do listy
+                    addCzescSystemu(inputValue);
+                    // Ustaw jako aktualną wartość
+                    $row.find('[data-field="czesc_systemu"]').val(inputValue);
+                    $row.find('[data-field="czesc_systemu_select"]').val(inputValue);
+                    // Wyczyść pole input
+                    $(this).val('');
+                }
+            }
+        });
+
+        // Obsługa przycisku zarządzania listą części
+        $row.find('.btn-manage-czesci').on('click', function() {
+            showCzesciSystemuManager();
+        });
+
         // Obsługa usuwania wiersza
         $row.find('.btn-delete-row').on('click', function() {
             deleteRow($row);
@@ -771,12 +884,76 @@
             counter++;
         });
     }
-    
-    // Eksportuj funkcje do użycia w innych skryptach (autosave)
+
+    // Pokaż modal zarządzania listą części systemu
+    function showCzesciSystemuManager() {
+        // Usuń poprzedni modal jeśli istnieje
+        $('#czesci-systemu-modal').remove();
+
+        // Utwórz HTML modalu
+        let modalHtml = `
+            <div id="czesci-systemu-modal" class="modal-overlay">
+                <div class="modal-content" style="max-width: 500px;">
+                    <div class="modal-header">
+                        <h3>Zarządzaj listą części systemu</h3>
+                        <button class="modal-close">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p style="margin-bottom: 15px; color: #666;">Kliknij przycisk <strong>×</strong> aby usunąć część z listy.</p>
+                        <div id="czesci-list" class="czesci-list">
+                            ${generateCzesciList()}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Dodaj modal do body
+        $('body').append(modalHtml);
+
+        // Obsługa zamykania modalu
+        $('#czesci-systemu-modal .modal-close, #czesci-systemu-modal .modal-overlay').on('click', function(e) {
+            if (e.target === this) {
+                $('#czesci-systemu-modal').remove();
+            }
+        });
+
+        // Obsługa usuwania części
+        $('#czesci-systemu-modal').on('click', '.btn-remove-czesc', function() {
+            const czesc = $(this).data('czesc');
+            if (confirm(`Czy na pewno chcesz usunąć "${czesc}" z listy?`)) {
+                removeCzescSystemu(czesc);
+                // Odśwież listę w modalu
+                $('#czesci-list').html(generateCzesciList());
+            }
+        });
+    }
+
+    // Generuj HTML listy części do modalu
+    function generateCzesciList() {
+        if (czesciSystemuList.length === 0) {
+            return '<p style="color: #999; text-align: center; padding: 20px;">Lista jest pusta. Dodaj części wpisując je w formularzu.</p>';
+        }
+
+        let html = '<div class="czesci-items">';
+        czesciSystemuList.forEach(function(czesc) {
+            html += `
+                <div class="czesc-item">
+                    <span class="czesc-name">${czesc}</span>
+                    <button type="button" class="btn-remove-czesc" data-czesc="${czesc}" title="Usuń">×</button>
+                </div>
+            `;
+        });
+        html += '</div>';
+        return html;
+    }
+
+    // Eksportuj funkcje do użycia w innych skryptach (autosave, project)
     window.ocenaRyzykaRowCounter = rowCounter;
     window.ocenaRyzykaGenerateDataRow = generateDataRow;
     window.ocenaRyzykaAttachRowEvents = attachRowEvents;
     window.ocenaRyzykaCalculateRisk = calculateRisk;
     window.ocenaRyzykaAddSelectionRow = addSelectionRow;
-    
+    window.addCzescSystemuToList = addCzescSystemu;
+
 })(jQuery);

@@ -310,7 +310,17 @@
             const $row = $('#row-' + rowData.lp);
             
             // Wypełnij dane
-            $row.find('[data-field="czesc_systemu"]').val(rowData.czesc_systemu);
+            // Część systemu - ustaw wartość i dodaj do listy jeśli nie istnieje
+            const czescSystemu = rowData.czesc_systemu;
+            if (czescSystemu && czescSystemu.trim() !== '') {
+                // Dodaj do listy części jeśli nie istnieje (funkcja sprawdzi to sama)
+                if (typeof window.addCzescSystemuToList === 'function') {
+                    window.addCzescSystemuToList(czescSystemu);
+                }
+                $row.find('[data-field="czesc_systemu"]').val(czescSystemu);
+                $row.find('[data-field="czesc_systemu_select"]').val(czescSystemu);
+            }
+
             $row.find('[data-field="zrodlo_zagrozenia"]').val(rowData.zrodlo_zagrozenia);
             $row.find('[data-field="zrodlo_zagrozenia_custom"]').val(rowData.zrodlo_zagrozenia_custom);
 

@@ -80,8 +80,7 @@ function ocena_ryzyka_display_form() {
                 
                 <!-- POZIOM 1 - Najwyższy (15px) -->
                 <tr class="header-level-1">
-                    <th colspan="2" class="header-empty"></th>
-                    <th colspan="1" class="header-empty"></th>
+                    <th colspan="3" class="header-empty"></th>
                     <th colspan="7" class="header-category">Identyfikacja zagrożeń</th>
                     <th colspan="5" class="header-category">Oszacowanie ryzyka</th>
                     <th colspan="1" class="header-category">Ewaluacja ryzyka</th>
