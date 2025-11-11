@@ -1,0 +1,431 @@
+/* ========================================
+   OCENA RYZYKA - STYLE CSS DLA PDF
+   Zoptymalizowane dla druku/generowania PDF
+   ======================================== */
+
+/* ========================================
+   OGÓLNE USTAWIENIA
+   ======================================== */
+   * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'DejaVu Sans', Arial, sans-serif;
+    font-size: 8pt;
+    line-height: 1.3;
+    color: #000000;
+}
+
+/* ========================================
+   NAGŁÓWEK DOKUMENTU
+   ======================================== */
+.pdf-header {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #0066cc;
+}
+
+.pdf-title {
+    font-size: 16pt;
+    font-weight: bold;
+    color: #0066cc;
+    margin-bottom: 5px;
+}
+
+.pdf-subtitle {
+    font-size: 10pt;
+    color: #666666;
+}
+
+.pdf-info {
+    margin-top: 10px;
+    font-size: 8pt;
+    color: #333333;
+}
+
+.pdf-info-row {
+    margin: 3px 0;
+}
+
+.pdf-info-label {
+    font-weight: bold;
+    display: inline-block;
+    width: 120px;
+}
+
+/* ========================================
+   TABELA - Główna struktura
+   ======================================== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 7pt;
+}
+
+th, td {
+    border: 1px solid #333333;
+    padding: 3px 4px;
+    vertical-align: middle;
+    text-align: center;
+    word-wrap: break-word;
+}
+
+/* ========================================
+   NAGŁÓWKI TABELI - 3 poziomy
+   ======================================== */
+
+/* POZIOM 1 - Najwyższy */
+.header-level-1 th {
+    background-color: #e3f2fd;
+    color: #1565c0;
+    font-size: 8pt;
+    font-weight: bold;
+    padding: 4px 3px;
+    text-align: center;
+    border: 1px solid #1565c0;
+}
+
+.header-level-1 .header-category {
+    background-color: #bbdefb;
+    color: #0d47a1;
+    font-weight: bold;
+}
+
+.header-level-1 .header-empty {
+    background-color: #f5f5f5;
+    border: 1px solid #cccccc;
+}
+
+/* POZIOM 2 - Średni */
+.header-level-2 th {
+    background-color: #f5f5f5;
+    color: #212529;
+    font-size: 7pt;
+    font-weight: bold;
+    padding: 4px 3px;
+    text-align: center;
+    border: 1px solid #666666;
+}
+
+.header-level-2 .header-section {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffc107;
+}
+
+/* POZIOM 3 - Dolny (szczegóły) */
+.header-level-3 th {
+    background-color: #ffffff;
+    color: #495057;
+    font-size: 6pt;
+    font-weight: normal;
+    padding: 3px 2px;
+    text-align: center;
+    border: 1px solid #999999;
+    line-height: 1.2;
+}
+
+/* ========================================
+   KOMÓRKI DANYCH
+   ======================================== */
+tbody td {
+    background-color: #ffffff;
+    font-size: 7pt;
+    padding: 3px 4px;
+    text-align: left;
+    border: 1px solid #666666;
+}
+
+/* Lp z ikonką */
+.cell-lp {
+    text-align: center;
+    font-weight: bold;
+    background-color: #f8f9fa;
+    width: 40px;
+    padding: 3px 2px;
+}
+
+.lp-number {
+    font-size: 9pt;
+    font-weight: bold;
+    color: #212529;
+    display: block;
+    margin-bottom: 2px;
+}
+
+/* Komórki z obrazkami */
+.cell-image {
+    text-align: center;
+    padding: 2mm;
+    width: 38mm; /* 3.4cm + padding */
+}
+
+.cell-image img {
+    max-width: 34mm !important;  /* 3.4cm */
+    max-height: 34mm !important;
+    width: 34mm !important;
+    height: auto !important;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Komórki obliczeniowe */
+.cell-calculated {
+    text-align: center;
+    background-color: #f8f9fa;
+    font-weight: bold;
+    color: #495057;
+    font-size: 7pt;
+}
+
+.calc-hrn-przed,
+.calc-hrn-po {
+    background-color: #e3f2fd;
+    color: #1565c0;
+    padding: 2px 4px;
+    border-radius: 2px;
+    font-weight: bold;
+}
+
+/* Stopnie ryzyka - kolorowanie */
+.calc-stopien-przed,
+.calc-stopien-po {
+    font-size: 6pt;
+    padding: 2px 3px;
+    border-radius: 2px;
+    display: inline-block;
+    font-weight: bold;
+}
+
+/* Ryzyko pomijalne */
+.risk-pomijalne {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+/* Ryzyko bardzo niskie */
+.risk-bardzo-niskie {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+/* Ryzyko niskie */
+.risk-niskie {
+    background-color: #cce5ff;
+    color: #004085;
+}
+
+/* Ryzyko znaczące */
+.risk-znaczace {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+/* Ryzyko wysokie */
+.risk-wysokie {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Ryzyko bardzo wysokie */
+.risk-bardzo-wysokie {
+    background-color: #f5c6cb;
+    color: #721c24;
+    font-weight: bold;
+}
+
+/* Ryzyko ekstremalne */
+.risk-ekstremalne {
+    background-color: #dc3545;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+/* Ryzyko nieakceptowalne */
+.risk-nieakceptowalne {
+    background-color: #8b0000;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+/* Redukcja ryzyka */
+.calc-redukcja {
+    background-color: #d4edda;
+    color: #155724;
+    font-weight: bold;
+    padding: 2px 4px;
+    border-radius: 2px;
+}
+
+/* ========================================
+   KOLOROWANIE WIERSZY WEDŁUG RODZAJU ZAGROŻENIA
+   ======================================== */
+
+/* Zagrożenia mechaniczne */
+.rodzaj-0 {
+    background-color: #fff8f0 !important;
+}
+
+.rodzaj-0 .cell-lp {
+    background-color: #ffe0b2 !important;
+    border-left: 3px solid #ff9800;
+}
+
+/* Zagrożenia elektryczne */
+.rodzaj-1 {
+    background-color: #f0f8ff !important;
+}
+
+.rodzaj-1 .cell-lp {
+    background-color: #bbdefb !important;
+    border-left: 3px solid #2196f3;
+}
+
+/* Zagrożenia termiczne */
+.rodzaj-2 {
+    background-color: #fff5f5 !important;
+}
+
+.rodzaj-2 .cell-lp {
+    background-color: #ffcdd2 !important;
+    border-left: 3px solid #f44336;
+}
+
+/* Zagrożenia hałasem */
+.rodzaj-3 {
+    background-color: #f9f5fa !important;
+}
+
+.rodzaj-3 .cell-lp {
+    background-color: #e1bee7 !important;
+    border-left: 3px solid #9c27b0;
+}
+
+/* Zagrożenia powodowane drganiami */
+.rodzaj-4 {
+    background-color: #f0f9f8 !important;
+}
+
+.rodzaj-4 .cell-lp {
+    background-color: #b2dfdb !important;
+    border-left: 3px solid #009688;
+}
+
+/* Zagrożenia powodowane promieniowaniem */
+.rodzaj-5 {
+    background-color: #fffef0 !important;
+}
+
+.rodzaj-5 .cell-lp {
+    background-color: #fff9c4 !important;
+    border-left: 3px solid #fbc02d;
+}
+
+/* Zagrożenia powodowane materiałami/substancjami */
+.rodzaj-6 {
+    background-color: #fff8fb !important;
+}
+
+.rodzaj-6 .cell-lp {
+    background-color: #f8bbd0 !important;
+    border-left: 3px solid #e91e63;
+}
+
+/* Zagrożenia powodowane nieprzestrzeganiem zasad ergonomii */
+.rodzaj-7 {
+    background-color: #f5f6fa !important;
+}
+
+.rodzaj-7 .cell-lp {
+    background-color: #c5cae9 !important;
+    border-left: 3px solid #3f51b5;
+}
+
+/* Zagrożenia wynikające ze środowiska */
+.rodzaj-8 {
+    background-color: #f5faf5 !important;
+}
+
+.rodzaj-8 .cell-lp {
+    background-color: #c8e6c9 !important;
+    border-left: 3px solid #4caf50;
+}
+
+/* Kombinacja zagrożeń */
+.rodzaj-9 {
+    background-color: #f7f5f3 !important;
+}
+
+.rodzaj-9 .cell-lp {
+    background-color: #d7ccc8 !important;
+    border-left: 3px solid #795548;
+}
+
+/* ========================================
+   KOLUMNY - SZEROKOŚCI (użyj mm zamiast px dla mPDF)
+   ======================================== */
+.col-lp { width: 15mm; }
+.col-czesc-systemu { width: 30mm; }
+.col-obraz { width: 38mm; } /* 3.4cm + padding */
+.col-zrodlo { width: 35mm; }
+.col-opis { width: 40mm; }
+.col-nastepstwo { width: 30mm; }
+.col-czesc-ciala { width: 25mm; }
+.col-skutki { width: 40mm; }
+.col-fazy { width: 35mm; }
+.col-param { width: 20mm; } /* DPH, LO, FE, NP */
+.col-hrn { width: 18mm; }
+.col-stopien { width: 30mm; }
+.col-srodki { width: 45mm; }
+.col-redukcja { width: 22mm; }
+
+/* ========================================
+   TEKSTY - FORMATOWANIE
+   ======================================== */
+.text-small {
+    font-size: 6pt;
+}
+
+.text-bold {
+    font-weight: bold;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-left {
+    text-align: left;
+}
+
+/* ========================================
+   ŁAMANIE STRON
+   ======================================== */
+.page-break {
+    page-break-after: always;
+}
+
+.no-page-break {
+    page-break-inside: avoid;
+}
+
+/* Zapobiegaj łamaniu wierszy tabeli */
+tr {
+    page-break-inside: avoid;
+}
+
+/* ========================================
+   STOPKA
+   ======================================== */
+.pdf-footer {
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px solid #cccccc;
+    font-size: 7pt;
+    color: #666666;
+    text-align: center;
+}

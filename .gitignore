@@ -1,0 +1,23 @@
+# Composer
+/vendor/
+composer.lock
+
+# Tymczasowe pliki
+/temp/
+/temp/pdf-images/
+*.tmp
+
+# Uploads (opcjonalnie - zależy czy chcesz wersjonować)
+/uploads/
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Cache
+*.cache

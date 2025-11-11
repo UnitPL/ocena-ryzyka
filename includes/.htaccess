@@ -1,0 +1,5 @@
+# Zablokuj bezpośredni dostęp do plików PHP
+<Files "*.php">
+    Order Allow,Deny
+    Deny from all
+</Files>
