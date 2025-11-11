@@ -1008,6 +1008,26 @@ tr[data-rodzaj] {
     background: #c82333;
 }
 
+/* Domyślna część systemu - wyróżnienie */
+.czesc-item.default-item {
+    background: #e7f3ff;
+    border-color: #90c9ff;
+}
+
+.czesc-item.default-item:hover {
+    background: #d4e9ff;
+}
+
+.czesc-item.default-item .czesc-name {
+    font-weight: 600;
+    color: #0056b3;
+}
+
+.default-label {
+    font-size: 18px;
+    color: #0056b3;
+}
+
 /* ========================================
    GRUPOWANIE WIERSZY I SCALANIE KOMÓREK
    ======================================== */

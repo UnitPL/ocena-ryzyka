@@ -20,6 +20,9 @@
     // Lista części systemu (przechowywana w localStorage)
     let czesciSystemuList = [];
 
+    // Domyślna część systemu (zawsze na liście)
+    const DEFAULT_CZESC = 'Cała maszyna';
+
     // Inicjalizacja listy części systemu
     function initCzesciSystemuList() {
         const saved = localStorage.getItem('ocena_ryzyka_czesci_systemu');
@@ -28,6 +31,20 @@
                 czesciSystemuList = JSON.parse(saved);
             } catch (e) {
                 czesciSystemuList = [];
+            }
+        }
+
+        // Upewnij się, że domyślna część jest na liście
+        if (!czesciSystemuList.includes(DEFAULT_CZESC)) {
+            czesciSystemuList.unshift(DEFAULT_CZESC);
+            saveCzesciSystemuList();
+        } else {
+            // Przenieś "Cała maszyna" na początek jeśli jest w innym miejscu
+            const index = czesciSystemuList.indexOf(DEFAULT_CZESC);
+            if (index > 0) {
+                czesciSystemuList.splice(index, 1);
+                czesciSystemuList.unshift(DEFAULT_CZESC);
+                saveCzesciSystemuList();
             }
         }
     }
@@ -48,6 +65,11 @@
 
     // Usuń część systemu z listy
     function removeCzescSystemu(czesc) {
+        // Nie można usunąć domyślnej części "Cała maszyna"
+        if (czesc === DEFAULT_CZESC) {
+            return;
+        }
+
         const index = czesciSystemuList.indexOf(czesc);
         if (index > -1) {
             czesciSystemuList.splice(index, 1);
@@ -59,9 +81,16 @@
     // Generuj opcje dla selecta części systemu
     function generateCzesciSystemuOptions() {
         let options = '<option value="">-- Wybierz z listy --</option>';
-        czesciSystemuList.forEach(function(czesc) {
+
+        czesciSystemuList.forEach(function(czesc, index) {
             options += `<option value="${czesc}">${czesc}</option>`;
+
+            // Dodaj separator po "Cała maszyna" jeśli są inne części
+            if (index === 0 && czesc === DEFAULT_CZESC && czesciSystemuList.length > 1) {
+                options += '<option disabled>──────────────</option>';
+            }
         });
+
         return options;
     }
 
@@ -1156,10 +1185,16 @@
 
         let html = '<div class="czesci-items">';
         czesciSystemuList.forEach(function(czesc) {
+            // Dla domyślnej części "Cała maszyna" nie pokazuj przycisku usuwania
+            const isDefault = czesc === DEFAULT_CZESC;
+            const removeBtn = isDefault
+                ? '<span class="default-label" title="Część domyślna - nie można usunąć">📌</span>'
+                : `<button type="button" class="btn-remove-czesc" data-czesc="${czesc}" title="Usuń">×</button>`;
+
             html += `
-                <div class="czesc-item">
+                <div class="czesc-item ${isDefault ? 'default-item' : ''}">
                     <span class="czesc-name">${czesc}</span>
-                    <button type="button" class="btn-remove-czesc" data-czesc="${czesc}" title="Usuń">×</button>
+                    ${removeBtn}
                 </div>
             `;
         });
