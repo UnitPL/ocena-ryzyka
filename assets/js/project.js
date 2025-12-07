@@ -284,6 +284,11 @@
 
         // Dodaj wiersze (użyj funkcji z autosave)
         data.rows.forEach(function(rowData) {
+            // Upewnij się, że niestandardowe fazy są na liście
+            if (rowData.fazy_zycia && typeof window.ocenaRyzykaEnsureCustomFazy === 'function') {
+                window.ocenaRyzykaEnsureCustomFazy(rowData.fazy_zycia);
+            }
+
             if (typeof window.ocenaRyzykaRestoreRow === 'function') {
                 // Jeśli jest funkcja z autosave
                 window.ocenaRyzykaRestoreRow(rowData);

@@ -1,6 +1,4 @@
-/* ========================================
-   OCENA RYZYKA - STYLE CSS
-   ======================================== */
+
 
 /* ========================================
    PEŁNA SZEROKOŚĆ EKRANU - wyjście poza kontener motywu
@@ -17,6 +15,7 @@
     max-width: 100vw;
     padding: 0 20px;
     box-sizing: border-box;
+    padding-bottom: 100px;
 }
 
 /* Toolbar na pełną szerokość */
@@ -364,6 +363,183 @@
     outline: none;
     border-color: #007bff;
     box-shadow: 0 0 0 2px rgba(0,123,255,0.1);
+}
+
+/* Custom multiselect dla faz życia */
+.cell-fazy-zycia {
+    min-width: 250px;
+    position: relative;
+}
+
+.multiselect-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.multiselect-selected {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 38px;
+    padding: 4px 8px;
+    background: white;
+    border: 1px solid #ced4da;
+    border-radius: 3px;
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 0.2s;
+}
+
+.multiselect-selected:hover {
+    border-color: #007bff;
+}
+
+.multiselect-selected:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.1);
+}
+
+.multiselect-tags {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+}
+
+.multiselect-placeholder {
+    font-size: 12px;
+    color: #6c757d;
+    font-style: italic;
+}
+
+.multiselect-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 6px;
+    background: #007bff;
+    color: white;
+    border-radius: 3px;
+    font-size: 11px;
+    line-height: 1.2;
+    max-width: 150px;
+}
+
+.multiselect-tag .tag-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.multiselect-tag .tag-remove {
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    font-weight: bold;
+    padding: 0 2px;
+    transition: color 0.15s;
+}
+
+.multiselect-tag .tag-remove:hover {
+    color: #ffcccc;
+}
+
+.multiselect-arrow {
+    margin-left: 8px;
+    font-size: 10px;
+    color: #6c757d;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+}
+
+.multiselect-dropdown {
+    position: fixed !important;
+    background: white;
+    border: 1px solid #ced4da;
+    border-radius: 3px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000 !important;
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    isolation: isolate;
+}
+
+.multiselect-options {
+    padding: 4px 0;
+}
+
+.multiselect-option {
+    display: flex;
+    align-items: flex-start;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+    user-select: none;
+}
+
+.multiselect-option:hover {
+    background: #f8f9fa;
+}
+
+.multiselect-option input[type="checkbox"] {
+    margin-right: 8px;
+    margin-top: 2px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.multiselect-option span {
+    font-size: 12px;
+    color: #212529;
+    line-height: 1.4;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    flex: 1;
+}
+
+.multiselect-option.custom-option {
+    background: #f8f9fa;
+}
+
+.multiselect-separator {
+    height: 1px;
+    background: #dee2e6;
+    margin: 4px 0;
+}
+
+.multiselect-add-new {
+    display: flex;
+    gap: 4px;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+}
+
+.multiselect-add-new .fazy-custom-input {
+    flex: 1;
+    padding: 6px 8px;
+    border: 1px solid #ced4da;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.multiselect-add-new .btn-add-faza {
+    padding: 6px 12px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.multiselect-add-new .btn-add-faza:hover {
+    background: #218838;
 }
 
 /* Komórki z obrazami */

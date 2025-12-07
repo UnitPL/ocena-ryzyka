@@ -73,7 +73,7 @@
                 potencjalne_nastepstwo: $row.find('[data-field="potencjalne_nastepstwo"]').val() || '',
                 czesc_ciala: $row.find('[data-field="czesc_ciala"]').val() || '',
                 skutki: $row.find('[data-field="skutki"]').val() || '',
-                fazy_zycia: $row.find('[data-field="fazy_zycia"]').val() || '',
+                fazy_zycia: JSON.parse($row.find('.multiselect-wrapper[data-field="fazy_zycia"] .multiselect-values').val() || '[]'),
                 dph_przed: $row.find('[data-field="dph_przed"]').val() || '',
                 lo_przed: $row.find('[data-field="lo_przed"]').val() || '',
                 fe_przed: $row.find('[data-field="fe_przed"]').val() || '',
@@ -157,12 +157,17 @@
             // Jeśli brak rodzaju zagrożenia - nie przywracaj (może być w trakcie wypełniania)
             return;
         }
-        
+
+        // Upewnij się, że niestandardowe fazy są na liście
+        if (rowData.fazy_zycia && typeof window.ocenaRyzykaEnsureCustomFazy === 'function') {
+            window.ocenaRyzykaEnsureCustomFazy(rowData.fazy_zycia);
+        }
+
         // Użyj funkcji z głównego skryptu do dodania wiersza
         if (typeof window.ocenaRyzykaGenerateDataRow === 'function') {
             const rowHtml = window.ocenaRyzykaGenerateDataRow(rowData.lp, rowData.rodzaj_zagrozenia);
             $('#table-body').append(rowHtml);
-            
+
             const $row = $('#row-' + rowData.lp);
             
             // Wypełnij dane
@@ -189,7 +194,7 @@
             $row.find('[data-field="potencjalne_nastepstwo"]').val(rowData.potencjalne_nastepstwo);
             $row.find('[data-field="czesc_ciala"]').val(rowData.czesc_ciala);
             $row.find('[data-field="skutki"]').val(rowData.skutki);
-            $row.find('[data-field="fazy_zycia"]').val(rowData.fazy_zycia);
+            // Fazy życia są już ustawione w generateFazyMultiselect podczas generowania wiersza
             $row.find('[data-field="dph_przed"]').val(rowData.dph_przed);
             $row.find('[data-field="lo_przed"]').val(rowData.lo_przed);
             $row.find('[data-field="fe_przed"]').val(rowData.fe_przed);

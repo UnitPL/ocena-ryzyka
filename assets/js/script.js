@@ -23,6 +23,133 @@
     // Domyślna część systemu (zawsze na liście)
     const DEFAULT_CZESC = 'Cała maszyna';
 
+    // Domyślne fazy życia produktu
+    const DEFAULT_FAZY = [
+        'Transport',
+        'Montaż i instalowanie/Przekazywanie do eksploatacji',
+        'Nastawianie/Uczenie/Programowanie i/lub zmiana procesu',
+        'Działanie',
+        'Czyszczenie/Konserwacja',
+        'Wykrywanie defektów/Usuwanie usterek',
+        'Wycofanie z eksploatacji/Demontaż'
+    ];
+
+    // Lista niestandardowych faz dodanych przez użytkownika (przechowywana w localStorage)
+    let customFazyList = [];
+
+    // Inicjalizacja listy niestandardowych faz
+    function initCustomFazyList() {
+        const saved = localStorage.getItem('ocena_ryzyka_custom_fazy');
+        if (saved) {
+            try {
+                customFazyList = JSON.parse(saved);
+            } catch (e) {
+                customFazyList = [];
+            }
+        }
+    }
+
+    // Zapisz listę niestandardowych faz do localStorage
+    function saveCustomFazyList() {
+        localStorage.setItem('ocena_ryzyka_custom_fazy', JSON.stringify(customFazyList));
+    }
+
+    // Dodaj niestandardową fazę do listy
+    function addCustomFaza(faza, skipUpdate = false) {
+        if (faza && faza.trim() !== '' && !customFazyList.includes(faza.trim()) && !DEFAULT_FAZY.includes(faza.trim())) {
+            customFazyList.push(faza.trim());
+            saveCustomFazyList();
+            if (!skipUpdate) {
+                updateAllFazySelects();
+            }
+            return true;
+        }
+        return false;
+    }
+
+    // Generuj custom multiselect dla faz życia
+    function generateFazyMultiselect(selectedFazy = null) {
+        // Jeśli nie ma wybranych faz, zaznacz wszystkie domyślnie
+        if (selectedFazy === null) {
+            selectedFazy = [...DEFAULT_FAZY, ...customFazyList];
+        }
+
+        let html = '<div class="multiselect-wrapper" data-field="fazy_zycia">';
+        html += '  <div class="multiselect-selected" tabindex="0">';
+        html += '    <div class="multiselect-tags">';
+
+        // Generuj tagi dla wybranych faz
+        if (selectedFazy.length === 0) {
+            html += '<span class="multiselect-placeholder">Wybierz fazy...</span>';
+        } else {
+            selectedFazy.forEach(function(faza) {
+                html += '<span class="multiselect-tag" data-value="' + faza + '">';
+                html += '  <span class="tag-text">' + faza + '</span>';
+                html += '  <span class="tag-remove" title="Usuń">×</span>';
+                html += '</span>';
+            });
+        }
+
+        html += '    </div>';
+        html += '    <span class="multiselect-arrow">▼</span>';
+        html += '  </div>';
+        html += '  <div class="multiselect-dropdown" style="display: none;">';
+        html += '    <div class="multiselect-options">';
+
+        // Domyślne fazy
+        DEFAULT_FAZY.forEach(function(faza) {
+            const checked = selectedFazy.includes(faza) ? ' checked' : '';
+            html += '<label class="multiselect-option">';
+            html += '  <input type="checkbox" value="' + faza + '"' + checked + '>';
+            html += '  <span>' + faza + '</span>';
+            html += '</label>';
+        });
+
+        // Separator + niestandardowe fazy
+        if (customFazyList.length > 0) {
+            html += '<div class="multiselect-separator"></div>';
+            customFazyList.forEach(function(faza) {
+                const checked = selectedFazy.includes(faza) ? ' checked' : '';
+                html += '<label class="multiselect-option custom-option">';
+                html += '  <input type="checkbox" value="' + faza + '"' + checked + '>';
+                html += '  <span>' + faza + '</span>';
+                html += '</label>';
+            });
+        }
+
+        // Pole dodawania nowej fazy
+        html += '<div class="multiselect-separator"></div>';
+        html += '<div class="multiselect-add-new">';
+        html += '  <input type="text" placeholder="Dodaj nową fazę..." class="fazy-custom-input">';
+        html += '  <button type="button" class="btn-add-faza">+</button>';
+        html += '</div>';
+
+        html += '  </div>';
+        html += '</div>';
+        html += '<input type="hidden" class="multiselect-values" value=\'' + JSON.stringify(selectedFazy) + '\'>';
+        html += '</div>';
+
+        return html;
+    }
+
+    // Aktualizuj wszystkie multiselect faz życia
+    function updateAllFazySelects() {
+        $('.multiselect-wrapper[data-field="fazy_zycia"]').each(function() {
+            const $wrapper = $(this);
+            const currentValues = JSON.parse($wrapper.find('.multiselect-values').val() || '[]');
+            const $row = $wrapper.closest('tr');
+
+            const newHtml = generateFazyMultiselect(currentValues);
+            const $newWrapper = $(newHtml);
+            $wrapper.replaceWith($newWrapper);
+
+            // Przypisz zdarzenia do nowego elementu
+            if ($row.length > 0) {
+                attachMultiselectEvents($row);
+            }
+        });
+    }
+
     // Inicjalizacja listy części systemu
     function initCzesciSystemuList() {
         const saved = localStorage.getItem('ocena_ryzyka_czesci_systemu');
@@ -112,6 +239,9 @@
         // Inicjalizacja listy części systemu
         initCzesciSystemuList();
 
+        // Inicjalizacja listy niestandardowych faz
+        initCustomFazyList();
+
         // Inicjalizacja tabeli - dodaj pierwszy wiersz wyboru
         initTable();
         
@@ -131,6 +261,51 @@
         
         $('#btn-otworz-projekt').on('click', function() {
             console.log('Otwórz projekt - TODO');
+        });
+
+        // Funkcja pomocnicza do zamykania dropdownów z przeniesieniem z powrotem do wrapperów
+        function closeAllMultiselectDropdowns() {
+            $('.multiselect-dropdown:visible').each(function() {
+                const $dropdown = $(this);
+                const $originalWrapper = $dropdown.data('originalWrapper');
+
+                if ($originalWrapper && $dropdown.parent().is('body')) {
+                    // Przenieś dropdown z powrotem do oryginalnego wrappera
+                    $dropdown.appendTo($originalWrapper);
+                }
+
+                // Zresetuj style i ukryj
+                $dropdown.css({position: '', top: '', left: '', width: ''}).hide();
+            });
+            $('.multiselect-arrow').text('▼');
+        }
+
+        // Zamknij dropdown multiselect po kliknięciu poza nim
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('.multiselect-wrapper').length && !$(e.target).closest('.multiselect-dropdown').length) {
+                closeAllMultiselectDropdowns();
+            }
+        });
+
+        // Zamknij dropdown multiselect po naciśnięciu ESC
+        $(document).on('keydown', function(e) {
+            if (e.key === 'Escape' || e.keyCode === 27) {
+                closeAllMultiselectDropdowns();
+            }
+        });
+
+        // Zamknij dropdown przy scrollowaniu strony lub kontenera
+        $(window).on('scroll', function() {
+            if ($('.multiselect-dropdown:visible').length > 0) {
+                closeAllMultiselectDropdowns();
+            }
+        });
+
+        // Zamknij dropdown przy scrollowaniu w kontenerze tabeli
+        $('.ocena-ryzyka-table-wrapper').on('scroll', function() {
+            if ($('.multiselect-dropdown:visible').length > 0) {
+                closeAllMultiselectDropdowns();
+            }
         });
     });
     
@@ -311,8 +486,8 @@
                 </td>
                 
                 <!-- 10. Fazy życia produktu -->
-                <td class="cell-editable">
-                    <textarea class="cell-textarea" data-field="fazy_zycia" rows="2" placeholder="Fazy życia produktu"></textarea>
+                <td class="cell-select cell-fazy-zycia">
+                    ${generateFazyMultiselect()}
                 </td>
                 
                 <!-- 11. DPH przed -->
@@ -538,6 +713,192 @@
         return options;
     }
     
+    // Obsługa zdarzeń dla custom multiselect
+    function attachMultiselectEvents($row) {
+        const $wrapper = $row.find('.multiselect-wrapper[data-field="fazy_zycia"]');
+        if ($wrapper.length === 0) return;
+
+        const $selected = $wrapper.find('.multiselect-selected');
+        const $dropdown = $wrapper.find('.multiselect-dropdown');
+
+        // Zapisz referencję do wrappera w danych dropdownu
+        $dropdown.data('originalWrapper', $wrapper);
+
+        // Otwórz/zamknij dropdown (tylko na kliknięciu w strzałkę lub puste miejsce, nie na tagi)
+        $selected.on('click', function(e) {
+            // Jeśli kliknięto w tag-remove, nie otwieraj dropdown
+            if ($(e.target).hasClass('tag-remove')) {
+                return;
+            }
+
+            e.stopPropagation();
+            const isOpen = $dropdown.is(':visible');
+
+            // Zamknij wszystkie inne dropdowny (przenieś je z powrotem do wrapperów)
+            $('.multiselect-dropdown:visible').each(function() {
+                const $openDropdown = $(this);
+                const $originalWrapper = $openDropdown.data('originalWrapper');
+
+                if ($originalWrapper && $openDropdown.parent().is('body')) {
+                    // Przenieś dropdown z powrotem do oryginalnego wrappera
+                    $openDropdown.appendTo($originalWrapper);
+                }
+
+                // Zresetuj style i ukryj
+                $openDropdown.css({position: '', top: '', left: '', width: ''}).hide();
+            });
+            $('.multiselect-arrow').text('▼');
+
+            if (!isOpen) {
+                // Oblicz pozycję dropdown względem okna
+                const rect = $selected[0].getBoundingClientRect();
+
+                // Przenieś dropdown do body (portal pattern - zapobiega problemom z z-index)
+                $dropdown.appendTo('body');
+
+                // Ustaw pozycję dropdown
+                $dropdown.css({
+                    position: 'fixed',
+                    top: rect.bottom + 4 + 'px',
+                    left: rect.left + 'px',
+                    width: rect.width + 'px'
+                });
+
+                $dropdown.show();
+                $wrapper.find('.multiselect-arrow').text('▲');
+            }
+        });
+
+        // Obsługa usuwania tagów (kliknięcie X)
+        $wrapper.on('click', '.tag-remove', function(e) {
+            e.stopPropagation();
+            const $tag = $(this).closest('.multiselect-tag');
+            const valueToRemove = $tag.attr('data-value');
+
+            // Znajdź dropdown - może być w wrapper lub w body
+            let $dropdown = $wrapper.find('.multiselect-dropdown');
+            if ($dropdown.length === 0) {
+                $dropdown = $('.multiselect-dropdown').filter(function() {
+                    return $(this).data('originalWrapper') && $(this).data('originalWrapper')[0] === $wrapper[0];
+                });
+            }
+
+            // Odznacz checkbox w dropdownie
+            $dropdown.find('.multiselect-option input[value="' + valueToRemove + '"]').prop('checked', false);
+
+            // Zaktualizuj wartości
+            updateMultiselectValues($wrapper);
+        });
+
+        // Obsługa zaznaczania checkboxów - delegacja na poziomie dokumentu (dropdown może być w body)
+        $(document).on('change', '.multiselect-dropdown .multiselect-option input[type="checkbox"]', function() {
+            const $checkbox = $(this);
+            const $dropdown = $checkbox.closest('.multiselect-dropdown');
+            const $originalWrapper = $dropdown.data('originalWrapper');
+
+            if ($originalWrapper) {
+                updateMultiselectValues($originalWrapper);
+            }
+        });
+
+        // Obsługa dodawania nowej fazy - delegacja na poziomie dokumentu (dropdown może być w body)
+        $(document).on('click', '.multiselect-dropdown .btn-add-faza', function() {
+            const $button = $(this);
+            const $dropdown = $button.closest('.multiselect-dropdown');
+            const $originalWrapper = $dropdown.data('originalWrapper');
+            const $input = $dropdown.find('.fazy-custom-input');
+            const newFaza = $input.val().trim();
+
+            if (newFaza && $originalWrapper) {
+                // Dodaj do globalnej listy (bez automatycznego update)
+                const added = addCustomFaza(newFaza, true);
+
+                if (added) {
+                    // Pobierz aktualne wartości i dodaj nową fazę
+                    const $valuesInput = $originalWrapper.find('.multiselect-values');
+                    const currentValues = JSON.parse($valuesInput.val() || '[]');
+                    currentValues.push(newFaza);
+
+                    // Znajdź wiersz zawierający ten wrapper
+                    const $row = $originalWrapper.closest('tr');
+
+                    // Przebuduj multiselect TEGO wiersza z nową fazą zaznaczoną
+                    const newHtml = generateFazyMultiselect(currentValues);
+                    const $newWrapper = $(newHtml);
+                    $originalWrapper.replaceWith($newWrapper);
+
+                    // Przypisz zdarzenia do nowego elementu
+                    attachMultiselectEvents($row);
+
+                    // Zaktualizuj WSZYSTKIE INNE multiselect (bez zaznaczania nowej fazy)
+                    $('.multiselect-wrapper[data-field="fazy_zycia"]').not($newWrapper).each(function() {
+                        const $otherWrapper = $(this);
+                        const otherValues = JSON.parse($otherWrapper.find('.multiselect-values').val() || '[]');
+                        const $otherRow = $otherWrapper.closest('tr');
+
+                        const otherHtml = generateFazyMultiselect(otherValues);
+                        const $otherNewWrapper = $(otherHtml);
+                        $otherWrapper.replaceWith($otherNewWrapper);
+
+                        if ($otherRow.length > 0) {
+                            attachMultiselectEvents($otherRow);
+                        }
+                    });
+
+                    // Otwórz dropdown ponownie
+                    $newWrapper.find('.multiselect-selected').click();
+                }
+            }
+        });
+
+        // Enter w polu dodawania nowej fazy - delegacja na poziomie dokumentu
+        $(document).on('keypress', '.multiselect-dropdown .fazy-custom-input', function(e) {
+            if (e.which === 13 || e.keyCode === 13) {
+                e.preventDefault();
+                const $input = $(this);
+                const $dropdown = $input.closest('.multiselect-dropdown');
+                $dropdown.find('.btn-add-faza').click();
+            }
+        });
+    }
+
+    // Aktualizuj wartości multiselect
+    function updateMultiselectValues($wrapper) {
+        const selectedValues = [];
+
+        // Znajdź dropdown - może być w wrapper lub w body (portal pattern)
+        let $dropdown = $wrapper.find('.multiselect-dropdown');
+        if ($dropdown.length === 0) {
+            // Dropdown może być w body, znajdź go po referencji
+            $dropdown = $('.multiselect-dropdown').filter(function() {
+                return $(this).data('originalWrapper') && $(this).data('originalWrapper')[0] === $wrapper[0];
+            });
+        }
+
+        // Zbierz zaznaczone wartości z dropdownu
+        $dropdown.find('.multiselect-option input[type="checkbox"]:checked').each(function() {
+            selectedValues.push($(this).val());
+        });
+
+        // Zaktualizuj ukryte pole
+        $wrapper.find('.multiselect-values').val(JSON.stringify(selectedValues));
+
+        // Zaktualizuj tagi
+        const $tagsContainer = $wrapper.find('.multiselect-tags');
+        $tagsContainer.empty();
+
+        if (selectedValues.length === 0) {
+            $tagsContainer.append('<span class="multiselect-placeholder">Wybierz fazy...</span>');
+        } else {
+            selectedValues.forEach(function(faza) {
+                const $tag = $('<span class="multiselect-tag" data-value="' + faza + '"></span>');
+                $tag.append('<span class="tag-text">' + faza + '</span>');
+                $tag.append('<span class="tag-remove" title="Usuń">×</span>');
+                $tagsContainer.append($tag);
+            });
+        }
+    }
+
     // Przypisanie obsługi zdarzeń do wiersza
     function attachRowEvents($row) {
         // Obsługa zmiany w parametrach ryzyka - automatyczne obliczenia
@@ -620,6 +981,9 @@
                 }
             }
         });
+
+        // Obsługa custom multiselect dla faz życia
+        attachMultiselectEvents($row);
 
         // Obsługa przycisku zarządzania listą części
         $row.find('.btn-manage-czesci').on('click', function() {
@@ -1202,6 +1566,22 @@
         return html;
     }
 
+    // Funkcja pomocnicza do dodawania niestandardowych faz z zapisanych danych
+    function ensureCustomFazy(fazyArray) {
+        if (Array.isArray(fazyArray)) {
+            fazyArray.forEach(function(faza) {
+                // Jeśli faza nie jest domyślna i nie jest już na liście custom
+                if (!DEFAULT_FAZY.includes(faza) && !customFazyList.includes(faza) && faza !== '__INNA__') {
+                    customFazyList.push(faza);
+                }
+            });
+            // Zapisz zaktualizowaną listę
+            if (customFazyList.length > 0) {
+                saveCustomFazyList();
+            }
+        }
+    }
+
     // Eksportuj funkcje do użycia w innych skryptach (autosave, project)
     window.ocenaRyzykaRowCounter = rowCounter;
     window.ocenaRyzykaGenerateDataRow = generateDataRow;
@@ -1210,5 +1590,6 @@
     window.ocenaRyzykaAddSelectionRow = addSelectionRow;
     window.addCzescSystemuToList = addCzescSystemu;
     window.ocenaRyzykaApplyRowGrouping = applyRowGrouping;
+    window.ocenaRyzykaEnsureCustomFazy = ensureCustomFazy;
 
 })(jQuery);
