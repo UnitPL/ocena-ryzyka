@@ -455,17 +455,15 @@ function ocena_ryzyka_generate_table_row($row, $rowspan_info = array()) {
     $html .= '<td class="cell-calculated">' . ocena_ryzyka_format_cell_value($row['np_przed']) . '</td>';
     
     // 15. HRN przed (obliczane)
-    $html .= '<td class="cell-calculated"><span class="calc-hrn-przed">' . ocena_ryzyka_format_cell_value($row['hrn_przed']) . '</span></td>';
-    
+    $html .= '<td class="cell-calculated cell-hrn-przed">' . ocena_ryzyka_format_cell_value($row['hrn_przed']) . '</td>';
+
     // 16. Stopień ryzyka przed (obliczany)
-    $html .= '<td class="cell-calculated">';
     if (!empty($row['stopien_przed'])) {
         $css_class = ocena_ryzyka_risk_level_to_css_class($row['stopien_przed']);
-        $html .= '<span class="calc-stopien-przed ' . $css_class . '">' . ocena_ryzyka_format_cell_value($row['stopien_przed']) . '</span>';
+        $html .= '<td class="cell-calculated cell-stopien-przed ' . $css_class . '">' . ocena_ryzyka_format_cell_value($row['stopien_przed']) . '</td>';
     } else {
-        $html .= '-';
+        $html .= '<td class="cell-calculated cell-stopien-przed">-</td>';
     }
-    $html .= '</td>';
     
     // 17. Środki profilaktyczne
     $html .= '<td class="text-small">' . ocena_ryzyka_format_cell_value($row['srodki_profilaktyczne']) . '</td>';
@@ -477,17 +475,15 @@ function ocena_ryzyka_generate_table_row($row, $rowspan_info = array()) {
     $html .= '<td class="cell-calculated">' . ocena_ryzyka_format_cell_value($row['np_po']) . '</td>';
     
     // 22. HRN po (obliczane)
-    $html .= '<td class="cell-calculated"><span class="calc-hrn-po">' . ocena_ryzyka_format_cell_value($row['hrn_po']) . '</span></td>';
-    
+    $html .= '<td class="cell-calculated cell-hrn-po">' . ocena_ryzyka_format_cell_value($row['hrn_po']) . '</td>';
+
     // 23. Stopień ryzyka po (obliczany)
-    $html .= '<td class="cell-calculated">';
     if (!empty($row['stopien_po'])) {
         $css_class = ocena_ryzyka_risk_level_to_css_class($row['stopien_po']);
-        $html .= '<span class="calc-stopien-po ' . $css_class . '">' . ocena_ryzyka_format_cell_value($row['stopien_po']) . '</span>';
+        $html .= '<td class="cell-calculated cell-stopien-po ' . $css_class . '">' . ocena_ryzyka_format_cell_value($row['stopien_po']) . '</td>';
     } else {
-        $html .= '-';
+        $html .= '<td class="cell-calculated cell-stopien-po">-</td>';
     }
-    $html .= '</td>';
     
     // 24. Obniżono ryzyko o [%]
     $html .= '<td class="cell-calculated"><span class="calc-redukcja">' . ocena_ryzyka_format_cell_value($row['redukcja']) . '</span></td>';

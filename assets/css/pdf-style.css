@@ -182,73 +182,69 @@ tbody td {
     font-size: 7pt;
 }
 
-.calc-hrn-przed,
-.calc-hrn-po {
-    background-color: #e3f2fd;
-    color: #1565c0;
-    padding: 2px 4px;
-    border-radius: 2px;
+/* Kolumny HRN - tło niebieskie */
+.cell-hrn-przed,
+.cell-hrn-po {
+    background-color: #e3f2fd !important;
+    color: #1565c0 !important;
     font-weight: bold;
 }
 
-/* Stopnie ryzyka - kolorowanie */
-.calc-stopien-przed,
-.calc-stopien-po {
-    font-size: 6pt;
-    padding: 2px 3px;
-    border-radius: 2px;
-    display: inline-block;
+/* Kolumny Stopień - tło według poziomu ryzyka */
+.cell-stopien-przed,
+.cell-stopien-po {
     font-weight: bold;
+    text-align: center;
 }
 
 /* Ryzyko pomijalne */
 .risk-pomijalne {
-    background-color: #d4edda;
-    color: #155724;
+    background-color: #d4edda !important;
+    color: #155724 !important;
 }
 
 /* Ryzyko bardzo niskie */
 .risk-bardzo-niskie {
-    background-color: #d1ecf1;
-    color: #0c5460;
+    background-color: #d1ecf1 !important;
+    color: #0c5460 !important;
 }
 
 /* Ryzyko niskie */
 .risk-niskie {
-    background-color: #cce5ff;
-    color: #004085;
+    background-color: #cce5ff !important;
+    color: #004085 !important;
 }
 
 /* Ryzyko znaczące */
 .risk-znaczace {
-    background-color: #fff3cd;
-    color: #856404;
+    background-color: #fff3cd !important;
+    color: #856404 !important;
 }
 
 /* Ryzyko wysokie */
 .risk-wysokie {
-    background-color: #f8d7da;
-    color: #721c24;
+    background-color: #f8d7da !important;
+    color: #721c24 !important;
 }
 
 /* Ryzyko bardzo wysokie */
 .risk-bardzo-wysokie {
-    background-color: #f5c6cb;
-    color: #721c24;
+    background-color: #f5c6cb !important;
+    color: #721c24 !important;
     font-weight: bold;
 }
 
 /* Ryzyko ekstremalne */
 .risk-ekstremalne {
-    background-color: #dc3545;
-    color: #ffffff;
+    background-color: #dc3545 !important;
+    color: #ffffff !important;
     font-weight: bold;
 }
 
 /* Ryzyko nieakceptowalne */
 .risk-nieakceptowalne {
-    background-color: #8b0000;
-    color: #ffffff;
+    background-color: #8b0000 !important;
+    color: #ffffff !important;
     font-weight: bold;
 }
 
