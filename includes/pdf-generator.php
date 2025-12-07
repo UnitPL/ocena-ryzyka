@@ -445,7 +445,8 @@ function ocena_ryzyka_generate_table_row($row, $rowspan_info = array()) {
     $html .= '<td class="text-small">' . ocena_ryzyka_format_cell_value($row['skutki']) . '</td>';
     
     // 10. Fazy życia produktu
-    $html .= '<td class="text-small">' . ocena_ryzyka_format_cell_value($row['fazy_zycia']) . '</td>';
+    $fazy_zycia_display = ocena_ryzyka_format_fazy_zycia($row['fazy_zycia']);
+    $html .= '<td class="text-small">' . $fazy_zycia_display . '</td>';
     
     // 11-14: Parametry PRZED korektą
     $html .= '<td class="cell-calculated">' . ocena_ryzyka_format_cell_value($row['dph_przed']) . '</td>';
@@ -815,8 +816,32 @@ function ocena_ryzyka_format_cell_value($value) {
     if (empty($value) || $value === '' || $value === null) {
         return '-';
     }
-    
+
     return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+}
+
+function ocena_ryzyka_format_fazy_zycia($fazy_zycia) {
+    // Jeśli puste, zwróć myślnik
+    if (empty($fazy_zycia)) {
+        return '-';
+    }
+
+    // Jeśli to tablica, sformatuj jako lista z przecinkami
+    if (is_array($fazy_zycia)) {
+        if (count($fazy_zycia) === 0) {
+            return '-';
+        }
+
+        // Połącz fazy przecinkami
+        $formatted = implode(", ", array_map(function($faza) {
+            return htmlspecialchars($faza, ENT_QUOTES, 'UTF-8');
+        }, $fazy_zycia));
+
+        return $formatted;
+    }
+
+    // Jeśli to string (stare dane), zwróć jako string
+    return htmlspecialchars($fazy_zycia, ENT_QUOTES, 'UTF-8');
 }
 
 function ocena_ryzyka_format_page_info($format) {

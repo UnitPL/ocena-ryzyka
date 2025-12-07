@@ -343,7 +343,7 @@
             $row.find('[data-field="potencjalne_nastepstwo"]').val(rowData.potencjalne_nastepstwo);
             $row.find('[data-field="czesc_ciala"]').val(rowData.czesc_ciala);
             $row.find('[data-field="skutki"]').val(rowData.skutki);
-            $row.find('[data-field="fazy_zycia"]').val(rowData.fazy_zycia);
+            // Fazy życia są już ustawione w generateFazyMultiselect podczas generowania wiersza
             $row.find('[data-field="dph_przed"]').val(rowData.dph_przed);
             $row.find('[data-field="lo_przed"]').val(rowData.lo_przed);
             $row.find('[data-field="fe_przed"]').val(rowData.fe_przed);
@@ -395,7 +395,7 @@
                 potencjalne_nastepstwo: $row.find('[data-field="potencjalne_nastepstwo"]').val() || '',
                 czesc_ciala: $row.find('[data-field="czesc_ciala"]').val() || '',
                 skutki: $row.find('[data-field="skutki"]').val() || '',
-                fazy_zycia: $row.find('[data-field="fazy_zycia"]').val() || '',
+                fazy_zycia: JSON.parse($row.find('.multiselect-wrapper[data-field="fazy_zycia"] .multiselect-values').val() || '[]'),
                 dph_przed: $row.find('[data-field="dph_przed"]').val() || '',
                 lo_przed: $row.find('[data-field="lo_przed"]').val() || '',
                 fe_przed: $row.find('[data-field="fe_przed"]').val() || '',
