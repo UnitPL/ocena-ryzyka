@@ -93,11 +93,12 @@ th, td {
     background-color: #bbdefb;
     color: #0d47a1;
     font-weight: bold;
+    border: 1px solid #1565c0 !important;
 }
 
 .header-level-1 .header-empty {
     background-color: #f5f5f5;
-    border: 1px solid #cccccc;
+    border: 0.9px solid #cccccc;
 }
 
 /* POZIOM 2 - Średni */
@@ -114,7 +115,7 @@ th, td {
 .header-level-2 .header-section {
     background-color: #fff3cd;
     color: #856404;
-    border: 1px solid #ffc107;
+    border: 1.1px solid #ffc107;
 }
 
 /* POZIOM 3 - Dolny (szczegóły) */
@@ -182,72 +183,6 @@ tbody td {
     font-size: 7pt;
 }
 
-/* Kolumny HRN - tło niebieskie */
-.cell-hrn-przed,
-.cell-hrn-po {
-    background-color: #e3f2fd !important;
-    color: #1565c0 !important;
-    font-weight: bold;
-}
-
-/* Kolumny Stopień - tło według poziomu ryzyka */
-.cell-stopien-przed,
-.cell-stopien-po {
-    font-weight: bold;
-    text-align: center;
-}
-
-/* Ryzyko pomijalne */
-.risk-pomijalne {
-    background-color: #d4edda !important;
-    color: #155724 !important;
-}
-
-/* Ryzyko bardzo niskie */
-.risk-bardzo-niskie {
-    background-color: #d1ecf1 !important;
-    color: #0c5460 !important;
-}
-
-/* Ryzyko niskie */
-.risk-niskie {
-    background-color: #cce5ff !important;
-    color: #004085 !important;
-}
-
-/* Ryzyko znaczące */
-.risk-znaczace {
-    background-color: #fff3cd !important;
-    color: #856404 !important;
-}
-
-/* Ryzyko wysokie */
-.risk-wysokie {
-    background-color: #f8d7da !important;
-    color: #721c24 !important;
-}
-
-/* Ryzyko bardzo wysokie */
-.risk-bardzo-wysokie {
-    background-color: #f5c6cb !important;
-    color: #721c24 !important;
-    font-weight: bold;
-}
-
-/* Ryzyko ekstremalne */
-.risk-ekstremalne {
-    background-color: #dc3545 !important;
-    color: #ffffff !important;
-    font-weight: bold;
-}
-
-/* Ryzyko nieakceptowalne */
-.risk-nieakceptowalne {
-    background-color: #8b0000 !important;
-    color: #ffffff !important;
-    font-weight: bold;
-}
-
 /* Redukcja ryzyka */
 .calc-redukcja {
     background-color: #d4edda;
@@ -262,100 +197,60 @@ tbody td {
    ======================================== */
 
 /* Zagrożenia mechaniczne */
-.rodzaj-0 {
-    background-color: #fff8f0 !important;
-}
-
 .rodzaj-0 .cell-lp {
     background-color: #ffe0b2 !important;
     border-left: 3px solid #ff9800;
 }
 
 /* Zagrożenia elektryczne */
-.rodzaj-1 {
-    background-color: #f0f8ff !important;
-}
-
 .rodzaj-1 .cell-lp {
     background-color: #bbdefb !important;
     border-left: 3px solid #2196f3;
 }
 
 /* Zagrożenia termiczne */
-.rodzaj-2 {
-    background-color: #fff5f5 !important;
-}
-
 .rodzaj-2 .cell-lp {
     background-color: #ffcdd2 !important;
     border-left: 3px solid #f44336;
 }
 
 /* Zagrożenia hałasem */
-.rodzaj-3 {
-    background-color: #f9f5fa !important;
-}
-
 .rodzaj-3 .cell-lp {
     background-color: #e1bee7 !important;
     border-left: 3px solid #9c27b0;
 }
 
 /* Zagrożenia powodowane drganiami */
-.rodzaj-4 {
-    background-color: #f0f9f8 !important;
-}
-
 .rodzaj-4 .cell-lp {
     background-color: #b2dfdb !important;
     border-left: 3px solid #009688;
 }
 
 /* Zagrożenia powodowane promieniowaniem */
-.rodzaj-5 {
-    background-color: #fffef0 !important;
-}
-
 .rodzaj-5 .cell-lp {
     background-color: #fff9c4 !important;
     border-left: 3px solid #fbc02d;
 }
 
 /* Zagrożenia powodowane materiałami/substancjami */
-.rodzaj-6 {
-    background-color: #fff8fb !important;
-}
-
 .rodzaj-6 .cell-lp {
     background-color: #f8bbd0 !important;
     border-left: 3px solid #e91e63;
 }
 
 /* Zagrożenia powodowane nieprzestrzeganiem zasad ergonomii */
-.rodzaj-7 {
-    background-color: #f5f6fa !important;
-}
-
 .rodzaj-7 .cell-lp {
     background-color: #c5cae9 !important;
     border-left: 3px solid #3f51b5;
 }
 
 /* Zagrożenia wynikające ze środowiska */
-.rodzaj-8 {
-    background-color: #f5faf5 !important;
-}
-
 .rodzaj-8 .cell-lp {
     background-color: #c8e6c9 !important;
     border-left: 3px solid #4caf50;
 }
 
 /* Kombinacja zagrożeń */
-.rodzaj-9 {
-    background-color: #f7f5f3 !important;
-}
-
 .rodzaj-9 .cell-lp {
     background-color: #d7ccc8 !important;
     border-left: 3px solid #795548;
@@ -364,7 +259,7 @@ tbody td {
 /* ========================================
    KOLUMNY - SZEROKOŚCI (użyj mm zamiast px dla mPDF)
    ======================================== */
-.col-lp { width: 15mm; }
+.col-lp { width: 7.5mm; }
 .col-czesc-systemu { width: 30mm; }
 .col-obraz { width: 38mm; } /* 3.4cm + padding */
 .col-zrodlo { width: 35mm; }

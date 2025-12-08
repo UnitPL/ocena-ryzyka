@@ -90,7 +90,7 @@ function ocena_ryzyka_generate_pdf($kod_projektu) {
             wp_mkdir_p($temp_dir);
         }
         
-        $filename = sanitize_file_name($projekt['nazwa_maszyny'] ?: $kod_projektu) . '_' . date('Y-m-d') . '.pdf';
+        $filename = sanitize_file_name($projekt['nazwa_maszyny'] ?: $kod_projektu) . '_' . current_time('Y-m-d') . '.pdf';
         $file_path = $temp_dir . $filename;
         
         $mpdf->Output($file_path, \Mpdf\Output\Destination::FILE);
@@ -242,7 +242,7 @@ function ocena_ryzyka_generate_pdf_header($projekt, $format) {
     $nazwa_maszyny = !empty($projekt['nazwa_maszyny']) ? $projekt['nazwa_maszyny'] : 'Bez nazwy';
     $kod_projektu = $projekt['kod_projektu'];
     $data_utworzenia = date('d.m.Y', strtotime($projekt['data_utworzenia']));
-    $data_eksportu = date('d.m.Y H:i');
+    $data_eksportu = current_time('d.m.Y H:i');
     $orientation_text = $format['orientation'] === 'L' ? 'poziomo' : 'pionowo';
     
     $html = '<div class="pdf-header">';
@@ -298,7 +298,7 @@ function ocena_ryzyka_generate_table_headers() {
     $html .= '<th rowspan="2" class="col-skutki">Skutki</th>';
     $html .= '<th rowspan="2" class="col-fazy">Fazy życia</th>';
     $html .= '<th colspan="6" class="header-section">Przed korektą</th>';
-    $html .= '<th rowspan="2" class="col-srodki">Środki</th>';
+    $html .= '<th rowspan="2" class="col-srodki">Środki profilaktyczne</th>';
     $html .= '<th colspan="6" class="header-section">Po korekcie</th>';
     $html .= '<th rowspan="2" class="col-redukcja">Redukcja</th>';
     $html .= '<th rowspan="2">Rodzaj zagrożenia</th>';
@@ -455,14 +455,14 @@ function ocena_ryzyka_generate_table_row($row, $rowspan_info = array()) {
     $html .= '<td class="cell-calculated">' . ocena_ryzyka_format_cell_value($row['np_przed']) . '</td>';
     
     // 15. HRN przed (obliczane)
-    $html .= '<td class="cell-calculated cell-hrn-przed">' . ocena_ryzyka_format_cell_value($row['hrn_przed']) . '</td>';
+    $colors_przed = ocena_ryzyka_get_hrn_color($row['hrn_przed']);
+    $html .= '<td class="cell-calculated" style="background-color: ' . $colors_przed['bg'] . '; color: ' . $colors_przed['color'] . '; font-weight: bold;">' . ocena_ryzyka_format_cell_value($row['hrn_przed']) . '</td>';
 
-    // 16. Stopień ryzyka przed (obliczany)
+    // 16. Stopień ryzyka przed (obliczany) - używa tego samego koloru co HRN przed
     if (!empty($row['stopien_przed'])) {
-        $css_class = ocena_ryzyka_risk_level_to_css_class($row['stopien_przed']);
-        $html .= '<td class="cell-calculated cell-stopien-przed ' . $css_class . '">' . ocena_ryzyka_format_cell_value($row['stopien_przed']) . '</td>';
+        $html .= '<td class="cell-calculated" style="background-color: ' . $colors_przed['bg'] . '; color: ' . $colors_przed['color'] . '; font-weight: bold;">' . ocena_ryzyka_format_cell_value($row['stopien_przed']) . '</td>';
     } else {
-        $html .= '<td class="cell-calculated cell-stopien-przed">-</td>';
+        $html .= '<td class="cell-calculated">-</td>';
     }
     
     // 17. Środki profilaktyczne
@@ -475,18 +475,29 @@ function ocena_ryzyka_generate_table_row($row, $rowspan_info = array()) {
     $html .= '<td class="cell-calculated">' . ocena_ryzyka_format_cell_value($row['np_po']) . '</td>';
     
     // 22. HRN po (obliczane)
-    $html .= '<td class="cell-calculated cell-hrn-po">' . ocena_ryzyka_format_cell_value($row['hrn_po']) . '</td>';
+    $colors_po = ocena_ryzyka_get_hrn_color($row['hrn_po']);
+    $html .= '<td class="cell-calculated" style="background-color: ' . $colors_po['bg'] . '; color: ' . $colors_po['color'] . '; font-weight: bold;">' . ocena_ryzyka_format_cell_value($row['hrn_po']) . '</td>';
 
-    // 23. Stopień ryzyka po (obliczany)
+    // 23. Stopień ryzyka po (obliczany) - używa tego samego koloru co HRN po
     if (!empty($row['stopien_po'])) {
-        $css_class = ocena_ryzyka_risk_level_to_css_class($row['stopien_po']);
-        $html .= '<td class="cell-calculated cell-stopien-po ' . $css_class . '">' . ocena_ryzyka_format_cell_value($row['stopien_po']) . '</td>';
+        $html .= '<td class="cell-calculated" style="background-color: ' . $colors_po['bg'] . '; color: ' . $colors_po['color'] . '; font-weight: bold;">' . ocena_ryzyka_format_cell_value($row['stopien_po']) . '</td>';
     } else {
-        $html .= '<td class="cell-calculated cell-stopien-po">-</td>';
+        $html .= '<td class="cell-calculated">-</td>';
     }
     
     // 24. Obniżono ryzyko o [%]
-    $html .= '<td class="cell-calculated"><span class="calc-redukcja">' . ocena_ryzyka_format_cell_value($row['redukcja']) . '</span></td>';
+    $redukcja_value = floatval($row['redukcja']);
+    if ($redukcja_value > 0) {
+        // Dodatnia - zielone tło (obniżono ryzyko)
+        $redukcja_style = 'background-color: #d4edda; color: #155724;';
+    } else if ($redukcja_value < 0) {
+        // Ujemna - czerwone tło (zwiększono ryzyko)
+        $redukcja_style = 'background-color: #f8d7da; color: #721c24;';
+    } else {
+        // Zero - białe tło (brak zmiany)
+        $redukcja_style = 'background-color: #ffffff; color: #000000;';
+    }
+    $html .= '<td class="cell-calculated" style="' . $redukcja_style . ' font-weight: bold;">' . ocena_ryzyka_format_cell_value($row['redukcja']) . '</td>';
     
     // 25. Rodzaj zagrożenia
     $html .= '<td class="text-small">' . ocena_ryzyka_format_cell_value($row['rodzaj_zagrozenia']) . '</td>';
@@ -521,7 +532,7 @@ function ocena_ryzyka_generate_pdf_footer($projekt) {
     $html = '<div class="pdf-footer">';
     $html .= 'Dokument wygenerowany przez system Ocena Ryzyka v' . OCENA_RYZYKA_VERSION;
     $html .= ' | Kod projektu: ' . htmlspecialchars($projekt['kod_projektu']);
-    $html .= ' | Data: ' . date('d.m.Y H:i');
+    $html .= ' | Data: ' . current_time('d.m.Y H:i');
     $html .= '</div>';
     return $html;
 }
@@ -782,7 +793,7 @@ function ocena_ryzyka_clean_image_cache($days = 7) {
 
 function ocena_ryzyka_risk_level_to_css_class($stopien) {
     $stopien = trim(strtolower($stopien));
-    
+
     $mapping = array(
         'ryzyko pomijalne' => 'risk-pomijalne',
         'ryzyko bardzo niskie' => 'risk-bardzo-niskie',
@@ -793,8 +804,23 @@ function ocena_ryzyka_risk_level_to_css_class($stopien) {
         'ryzyko ekstremalne' => 'risk-ekstremalne',
         'ryzyko nieakceptowalne' => 'risk-nieakceptowalne',
     );
-    
+
     return isset($mapping[$stopien]) ? $mapping[$stopien] : '';
+}
+
+function ocena_ryzyka_get_hrn_color($hrn) {
+    // Konwertuj HRN na liczbę
+    $hrn_value = floatval($hrn);
+
+    if ($hrn_value <= 5) {
+        return array('bg' => '#90EE90', 'color' => '#000000'); // zielony - Ryzyko pomijalne i bardzo niskie
+    } else if ($hrn_value <= 10) {
+        return array('bg' => '#FFEB3B', 'color' => '#000000'); // żółty - Ryzyko niskie
+    } else if ($hrn_value <= 500) {
+        return array('bg' => '#FFA726', 'color' => '#000000'); // pomarańczowy - Ryzyko znaczące, wysokie i bardzo wysokie
+    } else {
+        return array('bg' => '#F44336', 'color' => '#FFFFFF'); // czerwony - Ryzyko ekstremalne i nieakceptowalne
+    }
 }
 
 function ocena_ryzyka_get_rodzaj_css_class($rodzaj_zagrozenia) {
